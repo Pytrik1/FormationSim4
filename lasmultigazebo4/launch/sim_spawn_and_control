@@ -1,0 +1,24 @@
+#!/bin/sh
+
+#REMEMBER to set the proper amount of N within N_nexus.launch and add the new spawn robots in N_world.launch
+
+roslaunch lasmultigazebo3 N_nexus.launch&
+
+sleep 10
+
+roslaunch lasmultigazebo3 N_world.launch&
+
+sleep 10
+
+for i in 1 2 3 4 5 6    #add new values here depending on N amount of robots
+
+ do 
+
+  echo $i &
+
+  rosrun lasmulticontrol3 dataprocessingnode_N.py "$i" &
+
+  rosrun lasmulticontrol3 controller_N.py "$i" &
+
+ done
+

@@ -1,0 +1,302 @@
+#!/usr/bin/env python
+import rospy
+import numpy as np
+from rospy_tutorials.msg import Floats				
+from rospy.numpy_msg import numpy_msg
+from sensor_msgs.msg import LaserScan
+
+
+class determine_z_values:
+    ''' Determines the inter-agent distance values and publishes it to z_values topic '''
+   
+    def __init__(self):
+        ''' Iniate self and subscribe to /scan topic '''
+        # Desired distance - used for sending if no z is found or if the dataprocessingnode is shutdown: 
+        # robot not influenced if one z not found
+        self.d = np.float32(0.8)
+        self.dd = np.float32(np.sqrt(np.square(self.d)+np.square(self.d)))
+        
+        # set min and max values for filtering ranges in meter during initiation 
+        self.min_range = 0.25
+        self.max_range = 1.3
+        
+        # set variables for tracking
+        self.k = 0
+#        self.da = 16            # Max possible change of angle in 0.2 seconds at 1 m distance
+#        self.dzn = 0.28         # Max possible change of z in 0.2 seconds
+        self.da = 10            # Max possible change of angle in 0.2 seconds at 1 m distance
+        self.dzn = 0.10         # Max possible change of z in 0.2 seconds
+        self.ir = 0.35          # Use inner radius to prevent scanning inside of bucket
+
+        # prepare shutdown
+        self.running = True
+        rospy.on_shutdown(self.shutdown)
+                        
+        # prepare publisher
+        self.pub = rospy.Publisher('/nexus3/z_values', numpy_msg(Floats), queue_size=1)
+        
+        # subscribe to /scan topic with calculate_z as calback
+        rospy.Subscriber('/nexus3/scan', LaserScan, self.calculate_z)
+            	
+    def calculate_z(self, msg):
+        ''' Calculate the z_values from the scan data '''
+        # Check if not shutdown
+        if self.running:
+            
+            # save measured ranges in self.ranges array
+            self.ranges= np.asarray(msg.ranges) - 0.01
+    
+            # Initially find each other - no disturbances
+            if self.k <= 5:
+                # Save the angles (hits) of the robots in seperate arrays
+                z_a = np.where((self.ranges >= self.min_range) & (self.ranges <= self.max_range))[0] 
+                self.z_a1_raw = np.int_([])
+                self.z_a2_raw = np.int_([])        
+                self.z_a3_raw = np.int_([])
+              
+                j = 0
+                for i in range(len(z_a)-1):
+                    # Angles robot 1
+                    if (z_a[i] - z_a[i+1] >= -10) and j == 0: 
+                        self.z_a1_raw = np.append(self.z_a1_raw, z_a[i])
+                    elif (-10 <= z_a[i] - z_a[i-1] <= 10) and j == 0:
+                        self.z_a1_raw = np.append(self.z_a1_raw, z_a[i])
+                        j = j+1
+                    # Angles robot 2                
+                    elif (z_a[i] - z_a[i+1] >= -10) and j == 1: 
+                        self.z_a2_raw = np.append(self.z_a2_raw, z_a[i])
+                    elif (-10 <= z_a[i] - z_a[i-1] <= 10) and j == 1:
+                        self.z_a2_raw = np.append(self.z_a2_raw, z_a[i])
+                        j = j+1
+                    # Angles robot 3                
+                    elif (z_a[i] - z_a[i+1] >= -10) and j == 2: 
+                        self.z_a3_raw = np.append(self.z_a3_raw, z_a[i])
+                    elif (-10 <= z_a[i] - z_a[i-1] <= 10) and j == 2:
+                        self.z_a3_raw = np.append(self.z_a3_raw, z_a[i])
+                        j = j+1
+        
+                # Save mean angle and range for each robot
+                # Also save tracking variables
+                # Robot 1
+                if self.z_a1_raw != np.int_([]):
+                    self.z_a1 = int(np.round((self.z_a1_raw).mean()))
+                    self.zn_1 = np.float32(np.min(self.ranges[self.z_a1_raw]) + 0.098)  
+#                    print 'z_a1_raw =', self.z_a1_raw
+                    # Tracking variables
+                    self.z_a1_min = np.min(self.z_a1_raw)
+                    self.z_a1_max = np.max(self.z_a1_raw)
+                    self.zn_1_min = np.min(np.float32(self.ranges[self.z_a1_raw]))
+                    self.zn_1_max = np.max(np.float32(self.ranges[self.z_a1_raw]))
+                    print '\nNexus 3: zn_1=', self.zn_1
+                else: 
+                    self.z_a1 = np.int_([0])
+                    self.zn_1 = np.float32([self.d])
+                    print 'Nexus 3: zn_1= not found'
+    
+                # Robot 2
+                if self.z_a2_raw != np.int_([]):
+                    self.z_a2 = int(np.round((self.z_a2_raw).mean()))
+                    self.zn_2 = np.float32(np.min(self.ranges[self.z_a2_raw]) + 0.098)
+                    # Tracking variables                
+                    self.z_a2_min = np.min(self.z_a2_raw)
+                    self.z_a2_max = np.max(self.z_a2_raw)
+                    self.zn_2_min = np.min(np.float32(self.ranges[self.z_a2_raw]))
+                    self.zn_2_max = np.max(np.float32(self.ranges[self.z_a2_raw]))
+                    print 'Nexus 3: zn_2=', self.zn_2                
+                else: 
+                    self.z_a2 = np.int_([0])
+                    self.zn_2 = np.float32([self.dd])    
+                    print 'Nexus 3: zn_2= not found'
+    
+                # Robot 3  
+                if self.z_a3_raw != np.int_([]):
+                    self.z_a3 = int(np.round((self.z_a3_raw).mean()))
+                    self.zn_3 = np.float32(np.min(self.ranges[self.z_a3_raw]) + 0.098)           
+                    # Tracking variables                
+                    self.z_a3_min = np.min(self.z_a3_raw)
+                    self.z_a3_max = np.max(self.z_a3_raw)
+                    self.zn_3_min = np.min(np.float32(self.ranges[self.z_a3_raw]))
+                    self.zn_3_max = np.max(np.float32(self.ranges[self.z_a3_raw]))
+                    print 'Nexus 3: zn_3=', self.zn_3                
+                else: 
+                    self.z_a3 = np.int_([0])
+                    self.zn_3 = np.float32([self.d])
+                    print 'Nexus 3: zn_3= not found'
+                                
+                print self.k
+                self.k = self.k+1
+                
+            # Tracking
+            else:
+            # Robot 1
+                # Check if the neighbour is in the area of 360-0 degrees (twistpoint)
+                # And determine the ranges in which the robot possibly is
+                z_a1_radius_min = self.z_a1_min-self.da
+                z_a1_radius_max = self.z_a1_max+self.da
+                diam_tracking = 2*self.da + np.size(self.z_a1_raw)
+                if -diam_tracking < z_a1_radius_min < 0:
+                    self.p1_ranges = np.concatenate((self.ranges[self.z_a1_min-self.da:360], self.ranges[0:self.z_a1_max+self.da]), axis=0)
+#                    print 'min'
+                elif 359 < z_a1_radius_max < 360 + diam_tracking:
+                    self.z_a1_min = self.z_a1_min - 360
+                    self.z_a1_max = self.z_a1_max - 360
+                    self.p1_ranges = np.concatenate((self.ranges[self.z_a1_min-self.da:360], self.ranges[0:self.z_a1_max+self.da]), axis=0)
+#                    print 'max'
+                else:
+                    self.z_a1_min = np.mod(self.z_a1_min, 360)
+                    self.z_a1_max = np.mod(self.z_a1_max, 360)
+                    self.p1_ranges = self.ranges[self.z_a1_min-self.da : self.z_a1_max+self.da]
+#                    print 'normal'
+                
+                # From the possible ranges, determine the ones within a max distance with respect to the last round    
+                self.z_a1_raw = np.int_(np.where((self.p1_ranges >= (self.zn_1_min-self.dzn)) \
+                & (self.p1_ranges <= self.zn_1_max+self.dzn) & (self.p1_ranges >= self.ir))[0] + (self.z_a1_min-self.da))
+#                print 'z_a1_raw =', self.z_a1_raw
+                
+                # Calculate the mean angle and the norm
+                if self.z_a1_raw != np.int_([]):
+                    self.z_a1 = int(np.round((self.z_a1_raw).mean()))
+                    self.zn_1 = np.float32(np.min(self.ranges[self.z_a1_raw]) + 0.098)
+#                    print '\n z_a1=', self.z_a1
+#                    print 'zn_1=', self.zn_1                
+                    # Set tracking variables for next round
+                    self.z_a1_min = np.min(self.z_a1_raw)
+                    self.z_a1_max = np.max(self.z_a1_raw)
+                    self.zn_1_min = np.min(np.float32(self.ranges[self.z_a1_raw]))
+                    self.zn_1_max = np.max(np.float32(self.ranges[self.z_a1_raw]))       
+                # If not found, publish the desired distance to prevent influence on velocity
+                else:
+                    self.z_a1 = np.int_([0])
+                    self.zn_1 = np.float32([self.d])    
+                    print 'Nexus 3: zn_1= not found'
+                    
+            # Robot 2
+###                # Check if the neighbour is in the area of 360-0 degrees (twistpoint)
+###                # And determine the ranges in which the robot possibly is
+###                z_a2_radius_min = self.z_a2_min-self.da
+###                z_a2_radius_max = self.z_a2_max+self.da
+###                diam_tracking = 2*self.da + np.size(self.z_a2_raw)
+###                if -diam_tracking < z_a2_radius_min < 0:
+###                    self.p2_ranges = np.concatenate((self.ranges[self.z_a2_min-self.da:360], self.ranges[0:self.z_a2_max+self.da]), axis=0)
+###                    print 'min'
+###                elif 359 < z_a2_radius_max < 360 + diam_tracking:
+###                    self.z_a2_min = self.z_a2_min - 360
+###                    self.z_a2_max = self.z_a2_max - 360
+###                    self.p2_ranges = np.concatenate((self.ranges[self.z_a2_min-self.da:360], self.ranges[0:self.z_a2_max+self.da]), axis=0)
+###                    print 'max'
+###                else:
+###                    self.z_a2_min = np.mod(self.z_a2_min, 360)
+###                    self.z_a2_max = np.mod(self.z_a2_max, 360)
+###                    self.p2_ranges = self.ranges[self.z_a2_min-self.da : self.z_a2_max+self.da]
+###                    print 'normal'
+###                
+###                # From the possible ranges, determine the ones within a max distance with respect to the last round    
+###                self.z_a2_raw = np.int_(np.where((self.p2_ranges >= (self.zn_2_min-self.dzn)) \
+###                & (self.p2_ranges <= self.zn_2_max+self.dzn) & (self.p2_ranges >= self.ir))[0] + (self.z_a2_min-self.da))
+###                print 'z_a2_raw =', self.z_a2_raw
+###                
+###                # Calculate the mean angle and the norm
+###                if self.z_a2_raw != np.int_([]):
+###                    self.z_a2 = int(np.round((self.z_a2_raw).mean()))
+###                    self.zn_2 = np.float32(np.min(self.ranges[self.z_a2_raw]) + 0.098)
+###                    print 'z_a2=', self.z_a2
+###                    print 'zn_2=', self.zn_2                
+###                    # Set tracking variables for next round
+###                    self.z_a2_min = np.min(self.z_a2_raw)
+###                    self.z_a2_max = np.max(self.z_a2_raw)
+###                    self.zn_2_min = np.min(np.float32(self.ranges[self.z_a2_raw]))
+###                    self.zn_2_max = np.max(np.float32(self.ranges[self.z_a2_raw]))       
+###                # If not found, publish the desired distance to prevent influence on velocity
+###                else:
+###                    self.z_a2 = np.int_([0])
+###                    self.zn_2 = np.float32([self.dd])    
+###                    print 'zn_2= not found'                    
+
+            # Robot 3
+                # Check if the neighbour is in the area of 360-0 degrees (twistpoint)
+                # And determine the ranges in which the robot possibly is
+                z_a3_radius_min = self.z_a3_min-self.da
+                z_a3_radius_max = self.z_a3_max+self.da
+                diam_tracking = 2*self.da + np.size(self.z_a3_raw)
+                if -diam_tracking < z_a3_radius_min < 0:
+                    self.p3_ranges = np.concatenate((self.ranges[self.z_a3_min-self.da:360], self.ranges[0:self.z_a3_max+self.da]), axis=0)
+#                    print 'min'
+                elif 359 < z_a3_radius_max < 360 + diam_tracking:
+                    self.z_a3_min = self.z_a3_min - 360
+                    self.z_a3_max = self.z_a3_max - 360
+                    self.p3_ranges = np.concatenate((self.ranges[self.z_a3_min-self.da:360], self.ranges[0:self.z_a3_max+self.da]), axis=0)
+#                    print 'max'
+                else:
+                    self.z_a3_min = np.mod(self.z_a3_min, 360)
+                    self.z_a3_max = np.mod(self.z_a3_max, 360)
+                    self.p3_ranges = self.ranges[self.z_a3_min-self.da : self.z_a3_max+self.da]
+#                    print 'normal'
+                
+                # From the possible ranges, determine the ones within a max distance with respect to the last round    
+                self.z_a3_raw = np.int_(np.where((self.p3_ranges >= (self.zn_3_min-self.dzn)) \
+                & (self.p3_ranges <= self.zn_3_max+self.dzn) & (self.p3_ranges >= self.ir))[0] + (self.z_a3_min-self.da))
+#                print 'z_a3_raw =', self.z_a3_raw
+                
+                # Calculate the mean angle and the norm
+                if self.z_a3_raw != np.int_([]):
+                    self.z_a3 = int(np.round((self.z_a3_raw).mean()))
+                    self.zn_3 = np.float32(np.min(self.ranges[self.z_a3_raw]) + 0.098)
+#                    print 'z_a3=', self.z_a3
+#                    print 'zn_3=', self.zn_3                
+                    # Set tracking variables for next round
+                    self.z_a3_min = np.min(self.z_a3_raw)
+                    self.z_a3_max = np.max(self.z_a3_raw)
+                    self.zn_3_min = np.min(np.float32(self.ranges[self.z_a3_raw]))
+                    self.zn_3_max = np.max(np.float32(self.ranges[self.z_a3_raw]))       
+                # If not found, publish the desired distance to prevent influence on velocity
+                else:
+                    self.z_a3 = np.int_([0])
+                    self.zn_3 = np.float32([self.d])    
+                    print 'Nexus 3: zn_3= not found'
+    
+            # Calculate the z_x and _y values for each robot
+            self.zx_1 = np.float32(np.cos((self.z_a1-np.int_(180))*2*np.pi/360)*self.zn_1) 
+            self.zy_1 = np.float32(np.sin((self.z_a1-np.int_(180))*2*np.pi/360)*self.zn_1)
+    
+            self.zx_2 = np.float32(np.cos((self.z_a2-np.int_(180))*2*np.pi/360)*self.zn_2)
+            self.zy_2 = np.float32(np.sin((self.z_a2-np.int_(180))*2*np.pi/360)*self.zn_2)
+    
+            self.zx_3 = np.float32(np.cos((self.z_a3-np.int_(180))*2*np.pi/360)*self.zn_3)
+            self.zy_3 = np.float32(np.sin((self.z_a3-np.int_(180))*2*np.pi/360)*self.zn_3)
+    
+            self.z_values = np.array([self.zn_1, self.zx_1, self.zy_1, \
+                                      self.zn_2, self.zx_2, self.zy_2, \
+                                      self.zn_3, self.zx_3, self.zy_3], dtype=np.float32)
+
+            # Change max self.da and self.dzn if the robots are in formation or out of formation
+#e.g.           if self.zn_1 <= self.d+0.1 and self.zn_2 <= self.d+0.1 and self.zn_3 <= self.d+0.1:
+###                self.da = self.da - 2
+
+            # publish
+            self.publish_z_values()
+
+    def publish_z_values(self):
+        ''' Publish the z_values for the controller '''
+#        rospy.loginfo(self.z_values)
+        self.pub.publish(self.z_values)
+    
+    def shutdown(self):
+        # Setting z = d in order to stop the robots when shutting down the dataprocessingnode_2 node
+        rospy.loginfo("Stopping dataprocessingnode_3...")
+        self.running = False
+        self.z_values = np.array([self.d, self.d, 0, \
+                                  self.dd, self.dd, 0, \
+                                  self.d, self.d, 0], dtype=np.float32)
+        self.pub.publish(self.z_values)
+        rospy.sleep(1)
+
+if __name__ == '__main__':
+    rospy.init_node('dataprocessingnode_3', anonymous=False)
+    determine_z_values()
+    rospy.spin() 
+
+
+# Change for sim:
+###        rospy.Subscriber('/nexus1/scan', numpy_msg(Floats), self.calculate_z)
+###    def calculate_z(self, data):
+###        self.ranges= data.data
