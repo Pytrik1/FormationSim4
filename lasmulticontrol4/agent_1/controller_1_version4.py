@@ -125,9 +125,9 @@ class Controller:
             Uf = self.cf * (self.p21-self.p21_star+self.p31-self.p31_star+self.p41-self.p41_star)
 
             # Nelsons path planning control
-            if self.Ug.any:
+            try:
                 Ug = self.Ug
-            else: 
+            except AttributeError:
                 Ug = np.zeros((2,1))
             # print 'Ug', Ug
             # np.clip(self.Ug, -self.Ug_lim, self.Ug_lim, out=Ug)
@@ -137,7 +137,7 @@ class Controller:
             
             # Saturation
             # np.clip(U, -0.5, 0.5, out=U)
-            # U = self.saturation(U)
+            U = self.saturation(U)
 
             # Set old U values in order to prevent shaking
             self.U_oldd = self.U_old
@@ -180,6 +180,7 @@ class Controller:
         self.pub_zeta.publish(self.zeta1)
 
     def Ug_cmd_vel(self, msg):
+        print msg
         self.Ug = np.array([[msg.linear.x], [msg.linear.y]], dtype=np.float32)
 
     def formationMotion(self, msg):

@@ -89,6 +89,8 @@ class controller:
 
         # Subscribe to the filtered odometry node
         rospy.Subscriber('/n_4/odometry/filtered', Odometry, self.formationMotion)
+
+        rospy.Subscriber('Ug_cmd_vel', Twist, self.Ug_cmd_vel)
         
         # subscribe to zeta_values topic of each controller
         rospy.Subscriber('/n_1/zeta_values', numpy_msg(Floats), self.zeta1_sub)
@@ -137,9 +139,9 @@ class controller:
                 U0 = np.zeros((2,1))
             # Control law
             Uf = self.cf * (self.p14-self.p14_star+self.p24-self.p24_star+self.p34-self.p34_star)
-            if self.Ug.any:
+            try:
                 Ug = self.Ug
-            else: 
+            except AttributeError:
                 Ug = np.zeros((2,1))
             # np.clip(self.Ug, -self.Ug_lim, self.Ug_lim, out=Ug)
             U = Uf + Ug# - U0 + Ug
@@ -148,7 +150,7 @@ class controller:
                     
             # Saturation
             # np.clip(U, -0.5, 0.5, out=U)
-            # U = self.saturation(U)
+            U = self.saturation(U)
             print "U = ", -U
             # Set old U values for moving average in order to prevent shaking
             self.U_oldd = self.U_old
@@ -196,6 +198,7 @@ class controller:
         self.pub_zeta.publish(self.zeta4)
 
     def Ug_cmd_vel(self, msg):
+        print 'msg', msg
         self.Ug = np.array([[msg.linear.x], [msg.linear.y]], dtype=np.float32)
 
     def formationMotion(self, msg):

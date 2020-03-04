@@ -86,7 +86,9 @@ class Controller:
         rospy.Subscriber('/n_2/obstacles', numpy_msg(Floats), self.obstacleAvoidance)
 
         # Subscribe to the filtered odometry node
-        rospy.Subscriber('/n_2/odometry/filtered', Odometry, self.formationMotion)        
+        rospy.Subscriber('/n_2/odometry/filtered', Odometry, self.formationMotion)
+
+        rospy.Subscriber('Ug_cmd_vel', Twist, self.Ug_cmd_vel)  
         
         # subscribe to zeta_values topic of each controller
         rospy.Subscriber('/n_1/zeta_values', numpy_msg(Floats), self.zeta1_sub)
@@ -147,9 +149,9 @@ class Controller:
             Uf = self.cf * (self.p12-self.p12_star+self.p32-self.p32_star+self.p42-self.p42_star)
             
             # Saturation
-            if self.Ug.any:
+            try:
                 Ug = self.Ug
-            else: 
+            except AttributeError:
                 Ug = np.zeros((2,1))
             # np.clip(self.Ug, -self.Ug_lim, self.Ug_lim, out=Ug)
             U = Uf + Ug# - U0 + Ug
@@ -157,7 +159,7 @@ class Controller:
                     
             # Saturation
             # np.clip(U, -0.5, 0.5, out=U)
-            # U = self.saturation(U)
+            U = self.saturation(U)
             # U = self.saturation(U)
 
             # Set old U values for moving average in order to prevent shaking
