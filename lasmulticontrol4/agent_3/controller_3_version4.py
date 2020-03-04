@@ -105,9 +105,9 @@ class controller:
             r_values= data.data
             
             # Nelsons formation shape control
-            self.p23 = np.array([[r_values[1]], [r_values[2]]])
-            self.p13 = np.array([[r_values[4]], [r_values[5]]])
-            self.p43 = np.array([[r_values[7]], [r_values[8]]])
+            self.p13 = np.array([[r_values[1]], [r_values[2]]])
+            self.p43 = np.array([[r_values[4]], [r_values[5]]])
+            self.p23 = np.array([[r_values[7]], [r_values[8]]])
 
             # Error
             Ed = np.array([[r_values[0]-self.d], \
@@ -122,7 +122,7 @@ class controller:
                 U0 = np.zeros((2,1))
 
             # Control law
-            Uf = self.cf * (self.p13-self.p13_star+self.p23-self.p23_star+self.p43-self.p43_star)
+            Uf = self.cf * (self.p23-self.p23_star+self.p43-self.p43_star)
 
             
             try:
@@ -207,10 +207,18 @@ class controller:
 
     def obstacleAvoidance(self, data):
         obstacles = data.data
-        
-        zeta1 = np.array([[self.zeta1[0]],[self.zeta1[1]]])
-        zeta2 = np.array([[self.zeta2[0]],[self.zeta2[1]]])
-        zeta4 = np.array([[self.zeta4[0]],[self.zeta4[1]]])
+        try:
+            zeta1 = np.array([[self.zeta1[0]],[self.zeta1[1]]])
+        except AttributeError:
+            zeta1 = np.zeros((2,1))
+        try:
+            zeta2 = np.array([[self.zeta2[0]],[self.zeta2[1]]])
+        except AttributeError:
+            zeta2 = np.zeros((2,1))
+        try:
+            zeta4 = np.array([[self.zeta4[0]],[self.zeta4[1]]])
+        except AttributeError:
+            zeta4 = np.zeros((2,1))
         
         print 'zeta1', zeta1
         print 'zeta2', zeta2

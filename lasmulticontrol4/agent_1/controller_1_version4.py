@@ -122,7 +122,7 @@ class Controller:
                 print 'zeta1 set to zero'
                 U0 = np.zeros((2,1))
             # Control law
-            Uf = self.cf * (self.p21-self.p21_star+self.p31-self.p31_star+self.p41-self.p41_star)
+            Uf = self.cf * (self.p21-self.p21_star+self.p41-self.p41_star)
 
             # Nelsons path planning control
             try:

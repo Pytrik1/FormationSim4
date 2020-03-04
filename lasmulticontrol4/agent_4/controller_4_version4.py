@@ -138,7 +138,7 @@ class controller:
                 print 'zeta4 set to zero'
                 U0 = np.zeros((2,1))
             # Control law
-            Uf = self.cf * (self.p14-self.p14_star+self.p24-self.p24_star+self.p34-self.p34_star)
+            Uf = self.cf * (self.p14-self.p14_star+self.p34-self.p34_star)
             try:
                 Ug = self.Ug
             except AttributeError:

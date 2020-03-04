@@ -146,7 +146,7 @@ class Controller:
             else:
                 U0 = np.zeros((2,1))
             # Control law
-            Uf = self.cf * (self.p12-self.p12_star+self.p32-self.p32_star+self.p42-self.p42_star)
+            Uf = self.cf * (self.p12-self.p12_star+self.p32-self.p32_star)
             
             # Saturation
             try:
