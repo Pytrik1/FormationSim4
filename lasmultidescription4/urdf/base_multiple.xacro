@@ -49,7 +49,7 @@
                 <commandTopic>/${rn}/cmd_pose</commandTopic> 
                 <commandRate>100.0</commandRate>
         	<odometryTopic>/${rn}/odom</odometryTopic>
-        	<odometryFrame>odom</odometryFrame>
+        	<odometryFrame>${rn}/odom</odometryFrame>
         	<odometryRate>100.0</odometryRate>
         	<robotBaseFrame>${parent}</robotBaseFrame>
       </plugin>

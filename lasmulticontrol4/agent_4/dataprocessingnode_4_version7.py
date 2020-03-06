@@ -59,7 +59,12 @@ class determine_r_values:
         # prepare publisher
         self.pub_r = rospy.Publisher(self.name + '/r_values', numpy_msg(Floats), queue_size=1)
         self.pub_obs = rospy.Publisher(self.name + '/obstacles', numpy_msg(Floats), queue_size=1)
+         
+        # prepare publisher for modified laser scan data
+        self.pub_scan = rospy.Publisher('/n_4scan', LaserScan, queue_size=50)
 
+        self.num_readings = 360
+        self.laser_frequency = 80
         # subscribe to /scan topic with calculate_z as calback
         rospy.Subscriber('/n_4hokuyo_points', LaserScan, self.calculate_r)
 
@@ -69,6 +74,21 @@ class determine_r_values:
         ''' Calculate the r_values from the scan data '''
         # save measured ranges in local array
         # with correction of distance
+        current_time = rospy.Time.now()
+
+        scan = LaserScan()
+        scan.header.stamp = current_time
+        scan.header.frame_id = 'n_4_laser_frame'
+        scan.angle_min = -3.14159011841
+        scan.angle_max = 3.14159011841
+        scan.angle_increment = 6.283/self.num_readings
+        scan.time_increment = (1.0 / self.laser_frequency) /(self.num_readings)
+        scan.range_min = 0.3
+        scan.range_max = 30.0
+        
+        
+        scan.intensities = []
+        
         scandata= np.asarray(msg.ranges) #* 0.97
         scandata2 = np.copy(scandata)
 
@@ -104,6 +124,12 @@ class determine_r_values:
                                     break
                         else:
                             print i, v, 'is NONE'
+                    
+                    
+                    scandata3 = scandata2.copy()
+                    scandata3 = [float('Inf') if x<=0 else x for x in scandata2]
+                    print'scandata2', scandata3
+                    scan.ranges = scandata3
                     for idx, val in enumerate(scandata2):
                         if (val < self.min_range) or (val > 13):
                             scandata2[idx] = 0
@@ -221,7 +247,7 @@ class determine_r_values:
 
                 if ok:
                     self.pub_r.publish(self.r_values)
-                
+                    self.pub_scan.publish(scan)
                 else:
                     print 'Not all robots found!'
                     self.max_range = 1.5

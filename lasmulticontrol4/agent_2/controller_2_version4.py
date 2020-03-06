@@ -88,7 +88,7 @@ class Controller:
         # Subscribe to the filtered odometry node
         rospy.Subscriber('/n_2/odometry/filtered', Odometry, self.formationMotion)
 
-        rospy.Subscriber('Ug_cmd_vel', Twist, self.Ug_cmd_vel)  
+        rospy.Subscriber('/n_2/Ug_cmd_vel', Twist, self.Ug_cmd_vel)  
         
         # subscribe to zeta_values topic of each controller
         rospy.Subscriber('/n_1/zeta_values', numpy_msg(Floats), self.zeta1_sub)

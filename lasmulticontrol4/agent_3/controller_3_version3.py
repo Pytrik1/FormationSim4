@@ -103,9 +103,9 @@ class controller:
             r_values= data.data
             
             # Nelsons formation shape control
-            self.p23 = np.array([[r_values[1]], [r_values[2]]])
-            self.p13 = np.array([[r_values[4]], [r_values[5]]])
-            self.p43 = np.array([[r_values[7]], [r_values[8]]])
+            self.p13 = np.array([[r_values[1]], [r_values[2]]])
+            self.p43 = np.array([[r_values[4]], [r_values[5]]])
+            self.p23 = np.array([[r_values[7]], [r_values[8]]])
 
             # Error
             Ed = np.array([[r_values[0]-self.d], \
