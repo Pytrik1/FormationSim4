@@ -1,0 +1,11 @@
+<launch>
+
+  <node pkg="lasmulticontrol4" type="controller_1_centralized.py" name="controller_1" output="screen" /> 
+
+  <node pkg="lasmulticontrol4" type="controller_2_centralized.py" name="controller_2" output="screen" /> 
+
+  <node pkg="lasmulticontrol4" type="controller_3_centralized.py" name="controller_3" output="screen" /> 
+
+  <node pkg="lasmulticontrol4" type="controller_4_centralized.py" name="controller_4" output="screen" /> 
+
+</launch>

@@ -5,11 +5,11 @@
     <node name="map_server" pkg="map_server" type="map_server" args="$(find my_map_package)/my_map.pgm my_map_resolution"/>-->
 
  <!--- Run AMCL --> 
-   <include file="$(find amcl)/examples/amcl_omni.launch" />
+   <include file="$(find lasmultigazebo4)/launch/amcl_omni_centralized.launch" />
   <node pkg="lasmulticontrol4" type="fixed_tf_broadcaster.py" name="broadcaster_fixed" />
    
   <node pkg="ira_laser_tools" name="laserscan_multi_merger" type="laserscan_multi_merger" output="screen">
-    <param name="destination_frame" value="carrot1"/>
+    <param name="destination_frame" value="n_1/carrot1"/>
     <param name="cloud_destination_topic" value="/merged_cloud"/>
     <param name="scan_destination_topic" value="/scan_multi"/>
     <param name="laserscan_topics" value ="/n_1hokuyo_points /n_2hokuyo_points /n_3hokuyo_points /n_4hokuyo_points" /> <!-- LIST OF THE LASER SCAN TOPICS TO SUBSCRIBE -->
@@ -30,7 +30,7 @@
     <rosparam file="$(find lasmultigazebo4)/config/global_costmap_params.yaml" command="load" /> 
     <rosparam file="$(find lasmultigazebo4)/config/dwa_local_planner_params.yaml" command="load" />
     <remap from="odom" to="n_1/odom"/>
-    <remap from="cmd_vel" to="Ug_cmd_vel"/>
+    <remap from="cmd_vel" to="n_1/Ug_cmd_vel"/>
   </node>
 
 </launch>
