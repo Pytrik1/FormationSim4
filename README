@@ -1,6 +1,6 @@
-FormationSim3 is a package to simulate N Nexus robots with conctrollers and dataprocessing nodes that detect n agents rather than being fixed to a square formation
+FormationSim4 is a package to simulate N Nexus robots with conctrollers and dataprocessing nodes that detect n agents rather than being fixed to a square formation
 
-"lasmulticontrol" should be placed in your "catkin_ws/src" folder, you will also need some components from the "nexus" folder from the DTPA Lab and the "Hector_sensors_description" folder which can be found in the following website: "https://github.com/tu-darmstadt-ros-pkg/hector_models" (maybe some other general gazebo packages to run the sensors) 
+"lasmulticontrol4" should be placed in your "catkin_ws/src" folder, you will also need some components from the "nexus" folder from the DTPA Lab and the "Hector_sensors_description" folder which can be found in the following website: "https://github.com/tu-darmstadt-ros-pkg/hector_models" (maybe some other general gazebo packages to run the sensors) 
 
 The purpose of these scripts is to simulate a formation of 4 nexus robots DISTRIBUTEDLY controlled using rplidar.
 
