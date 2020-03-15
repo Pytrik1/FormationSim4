@@ -1,0 +1,6 @@
+#!/bin/sh
+
+rosrun lasmulticontrol4 dataprocessingnode_1.py&
+rosrun lasmulticontrol4 dataprocessingnode_2.py&
+rosrun lasmulticontrol4 dataprocessingnode_3.py&
+rosrun lasmulticontrol4 dataprocessingnode_4.py

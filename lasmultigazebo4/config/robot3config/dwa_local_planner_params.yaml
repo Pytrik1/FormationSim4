@@ -1,0 +1,24 @@
+#Configuration for dwa local planner
+#
+DWAPlannerROS:
+  max_vel_x: 0.45
+  min_vel_x: -0.45
+  max_vel_y: 0.45
+  min_vel_y: -0.45
+  max_rot_vel: 0.0
+  acc_lim_th: 0.4
+  acc_lim_x: 2.5
+  acc_lim_y: 2.5
+
+  holonomic_robot: true
+  yaw_goal_tolerance: 6.283
+  meter_scoring: true
+  vth_samples: 0
+  max_trans_vel: 0.5
+  xy_goal_tolerance: 0.2
+  vy_samples: 20
+  vx_samples: 20
+  stop_time_bufer: 0.02
+  goal_distance_bias: 32
+  path_distance_bias: 25
+

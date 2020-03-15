@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<robot name="base" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:property name="M_PI" value="3.14159"/>
+  <xacro:property name="MESH_SCALE" value="100"/>
+
+  <xacro:macro name="nexus_body"  params="parent rn *oorsprong">
+
+   <joint name="${rn}base_footprint_joint" type="fixed">
+     <xacro:insert_block name="oorsprong" />
+     <parent link="${parent}"/>
+     <child link="${rn}the_base"/>
+     <dynamics damping="1.0" friction="1"/>
+   </joint>
+
+   <link name="${rn}the_base">
+       <visual>
+ 	       <origin xyz="0 0 0" rpy="0 0 0" />
+       	 <geometry>
+             <mesh filename="package://nexus/meshes/base2-binary.stl"/>
+       	 </geometry>
+ 	       <material name="Yellow"/>
+       </visual>
+
+       <collision>
+         <origin xyz="0 0 0.05" rpy="0 0 0" />
+         <geometry>
+           <box size="0.425 0.375 0.1" />
+         </geometry>
+       </collision>
+
+       <inertial>
+         <mass value="20.0" />
+         <origin xyz="0 0 0" rpy="0 0 0" />
+         <inertia ixx="20.0" ixy="0.0" ixz="0.0"
+                  iyy="20.0" iyz="0.0" 
+                  izz="20.0" />
+       </inertial>
+            
+   </link>
+   
+   <xacro:macro name="cylinder_inertia" params="m r h">
+    <inertial>
+      <mass value="${m}"/>
+      <inertia ixx="${m*(3*r*r+h*h)/12}" ixy = "0" ixz = "0" iyy="${m*(3*r*r+h*h)/12}" iyz = "0" izz="${m*r*r/2}"/> 
+    </inertial>
+  </xacro:macro>
+ 
+  <xacro:macro name="wheel" params="prefix reflect">
+    <link name="${prefix}_wheel">
+      <visual>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="0.005"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="0.005"/>
+        </geometry>
+      </collision>
+      <xacro:cylinder_inertia m="10" r="${wheel_radius}" h="0.005"/>
+    </link>
+ 
+    <joint name="${prefix}_wheel_joint" type="continuous">
+      <axis xyz="0 1 0" rpy="0 0 0" />
+      <parent link="base_link"/>
+      <child link="${prefix}_wheel"/>
+      <origin xyz="${wheel_joint_offset} ${((base_width/2)+base_wheel_gap)*reflect} -0.005" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+ 
+  <xacro:wheel prefix="left" reflect="1"/>
+  <xacro:wheel prefix="right" reflect="-1"/>
+   
+   
+
+    <gazebo>
+      <!-- planar plugin is very simple, it wil ALWAYS force a speed, so if lifted, the object doesn't fall.
+	   but it works sort of...
+	   force_based exerts force and torque to a blob, works better.
+	  -->
+        <!--<plugin name="nexus_controller" filename="libgazebo_ros_force_based_move.so">-->
+        <plugin name="nexus_controller" filename="libgazebo_ros_planar_move.so">
+        	<commandTopic>/${rn}/cmd_vel</commandTopic>
+                <commandTopic>/${rn}/cmd_pose</commandTopic> 
+                <commandRate>100.0</commandRate>
+        	<odometryTopic>/${rn}/odom</odometryTopic>
+        	<odometryFrame>${rn}/odom</odometryFrame>
+        	<odometryRate>100.0</odometryRate>
+        	<robotBaseFrame>${parent}</robotBaseFrame>
+      </plugin>
+    </gazebo>
+    
+    <gazebo reference="${rn}the_base">
+      <!-- Gazebo colour -->
+      <material>Gazebo/Yellow</material>
+      <turnGravityOff>false</turnGravityOff>
+      <mu1 value="1.0" />
+      <mu2 value="1.0" />
+      <kp value="1000000.0" />
+      <kd value="1.0" />
+    </gazebo>
+        
+    <gazebo reference="${rn}base_footprint_joint">
+      <stopKd value="1.0" />
+      <stopKp value="1000000.0" />
+      <fudgeFactor value="0.5" />
+    </gazebo>
+        
+
+  </xacro:macro>
+
+</robot>

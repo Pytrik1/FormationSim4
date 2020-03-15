@@ -1,0 +1,3 @@
+#Configuration for gains
+#
+c: np.float32(0.5)

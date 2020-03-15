@@ -1,0 +1,24 @@
+<launch>
+
+   <master auto="start"/>
+ <!-- Run the map server  
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find my_map_package)/my_map.pgm my_map_resolution"/>-->
+
+ <!--- Run AMCL --> 
+    <include file="$(find amcl)/examples/amcl_omni.launch" />
+
+   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <rosparam file="$(find lasmultigazebo4)/config/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
+    <rosparam file="$(find lasmultigazebo4)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find lasmultigazebo4)/config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find lasmultigazebo4)/config/global_costmap_params.yaml" command="load" /> 
+    <rosparam file="$(find lasmultigazebo4)/config/dwa_local_planner_params.yaml" command="load" />
+    <remap from="odom" to="n_1/odom"/>
+    <remap from="cmd_vel" to="n_1/cmd_vel"/>
+ </node>
+
+   <node pkg="topic_tools" type="relay" name="relay_cmd_vel2" args="n_1/cmd_vel n_2/cmd_vel"/>
+   <node pkg="topic_tools" type="relay" name="relay_cmd_vel3" args="n_1/cmd_vel n_3/cmd_vel"/>
+   <node pkg="topic_tools" type="relay" name="relay_cmd_vel4" args="n_1/cmd_vel n_4/cmd_vel"/>
+</launch>

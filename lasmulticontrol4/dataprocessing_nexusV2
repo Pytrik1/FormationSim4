@@ -1,0 +1,6 @@
+#!/bin/sh
+
+rosrun lasmulticontrol3 dataprocessingnode_V3.py&
+rosrun lasmulticontrol3 dataprocessingnode_V3\(2\).py&
+rosrun lasmulticontrol3 dataprocessingnode_V3\(3\).py&
+#rosrun lasmulticontrol3 dataprocessingnode_V3\(4\).py

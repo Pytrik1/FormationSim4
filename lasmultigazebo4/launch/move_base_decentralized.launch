@@ -1,0 +1,83 @@
+<launch>
+
+  <master auto="start"/>
+ <!-- Run the map server  
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find my_map_package)/my_map.pgm my_map_resolution"/>-->
+  <node pkg="lasmulticontrol4" type="fixed_tf_broadcaster.py" name="broadcaster_fixed" />
+  
+  <group ns="n_1">
+
+   <node pkg="amcl" type="amcl" name="amcl">
+    <rosparam file="$(find lasmultigazebo4)/config/amcl_params.yaml" command="load" />
+    <remap from="scan" to="n_1scan" />
+   </node>
+
+   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <rosparam file="$(find lasmultigazebo4)/config/robot1config/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
+    <rosparam file="$(find lasmultigazebo4)/config/robot1config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find lasmultigazebo4)/config/robot1config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find lasmultigazebo4)/config/robot1config/global_costmap_params.yaml" command="load" /> 
+    <rosparam file="$(find lasmultigazebo4)/config/robot1config/dwa_local_planner_params.yaml" command="load" />
+    <!--<remap from="odom" to="n_1/odom"/>-->
+    <remap from="cmd_vel" to="Ug_cmd_vel"/>
+   </node>
+  </group>
+  
+  <group ns="n_2">
+
+   <node pkg="amcl" type="amcl" name="amcl">
+    <rosparam file="$(find lasmultigazebo4)/config/amcl_params.yaml" command="load" />
+    <remap from="scan" to="n_2scan" />
+   </node>
+
+   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <rosparam file="$(find lasmultigazebo4)/config/robot2config/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
+    <rosparam file="$(find lasmultigazebo4)/config/robot2config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find lasmultigazebo4)/config/robot2config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find lasmultigazebo4)/config/robot2config/global_costmap_params.yaml" command="load" /> 
+    <rosparam file="$(find lasmultigazebo4)/config/robot2config/dwa_local_planner_params.yaml" command="load" />
+    <!--<remap from="odom" to="n_1/odom"/>-->
+    <remap from="cmd_vel" to="Ug_cmd_vel"/>
+   </node>
+  </group>
+  
+  <group ns="n_3">
+
+   <node pkg="amcl" type="amcl" name="amcl">
+    <rosparam file="$(find lasmultigazebo4)/config/amcl_params.yaml" command="load" />
+    <remap from="scan" to="n_3scan" />
+   </node>
+
+   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <rosparam file="$(find lasmultigazebo4)/config/robot3config/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
+    <rosparam file="$(find lasmultigazebo4)/config/robot3config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find lasmultigazebo4)/config/robot3config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find lasmultigazebo4)/config/robot3config/global_costmap_params.yaml" command="load" /> 
+    <rosparam file="$(find lasmultigazebo4)/config/robot3config/dwa_local_planner_params.yaml" command="load" />
+    <!--<remap from="odom" to="n_1/odom"/>-->
+    <remap from="cmd_vel" to="Ug_cmd_vel"/>
+   </node>
+  </group>
+
+  <group ns="n_4">
+
+   <node pkg="amcl" type="amcl" name="amcl">
+    <rosparam file="$(find lasmultigazebo4)/config/amcl_params.yaml" command="load" />
+    <remap from="scan" to="n_4scan" />
+   </node>
+
+   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <rosparam file="$(find lasmultigazebo4)/config/robot4config/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
+    <rosparam file="$(find lasmultigazebo4)/config/robot4config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find lasmultigazebo4)/config/robot4config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find lasmultigazebo4)/config/robot4config/global_costmap_params.yaml" command="load" /> 
+    <rosparam file="$(find lasmultigazebo4)/config/robot4config/dwa_local_planner_params.yaml" command="load" />
+    <!--<remap from="odom" to="n_1/odom"/>-->
+    <remap from="cmd_vel" to="Ug_cmd_vel"/>
+   </node>
+  </group>
+</launch>

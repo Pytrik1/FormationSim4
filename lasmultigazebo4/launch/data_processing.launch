@@ -1,0 +1,11 @@
+<launch>
+
+  <node pkg="lasmulticontrol4" type="dataprocessingnode_1_version7.py" name="dataprocessingnode_1" output="screen" /> 
+
+  <node pkg="lasmulticontrol4" type="dataprocessingnode_2_version7.py" name="dataprocessingnode_2" output="screen" /> 
+
+  <node pkg="lasmulticontrol4" type="dataprocessingnode_3_version7.py" name="dataprocessingnode_3" output="screen" /> 
+
+  <node pkg="lasmulticontrol4" type="dataprocessingnode_4_version7.py" name="dataprocessingnode_4" output="screen" /> 
+
+</launch>
