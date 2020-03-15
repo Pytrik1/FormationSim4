@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="platoon_merging" type="platooning_agent_1_generationmu.py" name="platooning_agent_n_1_generationmu" output="screen" />
+    <node pkg="platoon_merging" type="platooning_agent_2_generationmu.py" name="platooning_agent_n_2_generationmu" output="screen" />
+    <node pkg="platoon_merging" type="platooning_agent_3_generationmu.py" name="platooning_agent_n_3_generationmu" output="screen" />
+    <node pkg="platoon_merging" type="platooning_agent_4_generationmu.py" name="platooning_agent_n_4_generationmu" output="screen" />
+</launch>

@@ -1,0 +1,8 @@
+p21_star = [0; 3];
+p31_star = [-2; 0];
+p1 = [1; -1];
+p2 = p1 + p21_star;
+p3 = p1 + p31_star;
+
+figure
+plot(p1(1),p2(2), 'o')

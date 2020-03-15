@@ -1,0 +1,11 @@
+string header
+float64 error_x
+float64 error_x_neg
+float64 error_y
+float64 linear_x
+float64 linear_y
+float64 dt
+float64 distance_x
+float64 time
+float64[] mu
+float64[] mu_hat

@@ -1,0 +1,7 @@
+function dydt = vdp1(t,y)
+%vdp1 Evaluate the van der Pol ODEs for mu =1
+%
+%  See also ODE113, ODE23, ODE45/
+%
+
+dydt = (-15*y(1);
