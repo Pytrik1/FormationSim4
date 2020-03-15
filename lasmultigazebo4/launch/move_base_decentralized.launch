@@ -7,7 +7,10 @@
   
   <group ns="n_1">
 
-   <include file="$(find amcl)/examples/amcl_omni.launch" />
+   <node pkg="amcl" type="amcl" name="amcl">
+    <rosparam file="$(find lasmultigazebo4)/config/amcl_params.yaml" command="load" />
+    <remap from="scan" to="n_1scan" />
+   </node>
 
    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
@@ -23,7 +26,10 @@
   
   <group ns="n_2">
 
-   <include file="$(find amcl)/examples/amcl_omni.launch" />
+   <node pkg="amcl" type="amcl" name="amcl">
+    <rosparam file="$(find lasmultigazebo4)/config/amcl_params.yaml" command="load" />
+    <remap from="scan" to="n_2scan" />
+   </node>
 
    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
@@ -39,7 +45,10 @@
   
   <group ns="n_3">
 
-   <include file="$(find amcl)/examples/amcl_omni.launch" />
+   <node pkg="amcl" type="amcl" name="amcl">
+    <rosparam file="$(find lasmultigazebo4)/config/amcl_params.yaml" command="load" />
+    <remap from="scan" to="n_3scan" />
+   </node>
 
    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
@@ -55,7 +64,10 @@
 
   <group ns="n_4">
 
-   <include file="$(find amcl)/examples/amcl_omni.launch" />
+   <node pkg="amcl" type="amcl" name="amcl">
+    <rosparam file="$(find lasmultigazebo4)/config/amcl_params.yaml" command="load" />
+    <remap from="scan" to="n_4scan" />
+   </node>
 
    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />

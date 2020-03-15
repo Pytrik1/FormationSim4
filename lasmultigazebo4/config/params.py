@@ -3,7 +3,7 @@ import numpy as np
 
 #Controller gains
 c = np.float32(0.5)
-cf = np.float(1.5)
+cf = np.float(0.0)
 cD =np.float(20)
 cI = np.float(0.6)
 cP = np.float(4)

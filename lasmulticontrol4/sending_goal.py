@@ -7,8 +7,8 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 def movebase_client():
     
-    finalpose_x = 5.0
-    finalpose_y = 15.0
+    finalpose_x = -7.0
+    finalpose_y = 0.0
 
     client1 = actionlib.SimpleActionClient('/n_1/move_base',MoveBaseAction)
     client1.wait_for_server()
@@ -27,25 +27,25 @@ def movebase_client():
     goal3 = MoveBaseGoal()
     goal4 = MoveBaseGoal()
 
-    goal1.target_pose.header.frame_id = "n_1_laser_frame"
+    goal1.target_pose.header.frame_id = "n_1/carrot1"
     goal1.target_pose.header.stamp = rospy.Time.now()
     goal1.target_pose.pose.position.x = finalpose_x
     goal1.target_pose.pose.position.y = finalpose_y
     goal1.target_pose.pose.orientation.w = 1.0
 
-    goal2.target_pose.header.frame_id = "n_2_laser_frame"
+    goal2.target_pose.header.frame_id = "n_2/carrot2"
     goal2.target_pose.header.stamp = rospy.Time.now()
     goal2.target_pose.pose.position.x = finalpose_x
     goal2.target_pose.pose.position.y = finalpose_y
     goal2.target_pose.pose.orientation.w = 1.0
 
-    goal3.target_pose.header.frame_id = "n_3_laser_frame"
+    goal3.target_pose.header.frame_id = "n_3/carrot3"
     goal3.target_pose.header.stamp = rospy.Time.now()
     goal3.target_pose.pose.position.x = finalpose_x
     goal3.target_pose.pose.position.y = finalpose_y
     goal3.target_pose.pose.orientation.w = 1.0
 
-    goal4.target_pose.header.frame_id = "n_4_laser_frame"
+    goal4.target_pose.header.frame_id = "n_4/carrot4"
     goal4.target_pose.header.stamp = rospy.Time.now()
     goal4.target_pose.pose.position.x = finalpose_x
     goal4.target_pose.pose.position.y = finalpose_y
