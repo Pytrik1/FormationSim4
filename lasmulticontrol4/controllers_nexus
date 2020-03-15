@@ -1,6 +1,0 @@
-#!/bin/sh
-
-rosrun lasmulticontrol4 controller_1.py&
-rosrun lasmulticontrol4 controller_2.py&
-rosrun lasmulticontrol4 controller_3.py&
-rosrun lasmulticontrol4 controller_4.py

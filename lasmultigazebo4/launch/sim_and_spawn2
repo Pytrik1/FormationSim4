@@ -1,5 +1,0 @@
-#!/bin/sh
-
-#REMEMBER TO SET THE PROPER AMOUNT OF N WITHIN N_nexus.launch and add the new spawn robots in N_world.launch
-
-roslaunch lasmultigazebo3 N_nexus_world.launch
