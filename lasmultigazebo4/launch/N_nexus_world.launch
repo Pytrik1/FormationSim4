@@ -46,6 +46,8 @@
       <param name="base_link_frame" type="string" value="$(arg pre)base_footprint" />
       <param name="odom0" type="string" value="/$(arg pre)/odom" />
       <param name="imu0" type="string" value="/$(arg pre)/imu_data" />
+      <param name="odom_frame" type="string" value="$(arg pre)/odom" />
+      <param name="world_frame" type="string" value="$(arg pre)/odom" />
     </node>
     
     <node name="spawn_nexus_$(arg N)" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -param robot_description -x $(arg x) -y $(arg y) -Y $(arg Y) -model nexus_$(arg N)"/> 

@@ -90,7 +90,7 @@ class controller:
         # Subscribe to the filtered odometry node
         rospy.Subscriber('/n_4/odometry/filtered', Odometry, self.formationMotion)
 
-        rospy.Subscriber('/n_4/Ug_cmd_vel', Twist, self.Ug_cmd_vel)
+        # rospy.Subscriber('/n_4/Ug_cmd_vel', Twist, self.Ug_cmd_vel)
         
         # subscribe to zeta_values topic of each controller
         rospy.Subscriber('/n_1/zeta_values', numpy_msg(Floats), self.zeta1_sub)
@@ -112,24 +112,14 @@ class controller:
             self.p24 = np.array([[r_values[4]], [r_values[5]]])
             self.p14 = np.array([[r_values[7]], [r_values[8]]])
             # Formation shape control
-            BbDz = np.array([[r_values[1], r_values[4], r_values[7]], \
-                                  [r_values[2], r_values[5], r_values[8]]])
-            Dzt = np.array([[(r_values[0])**(-1), 0, 0], \
-                                 [0, (r_values[3])**(-1), 0], \
-                                 [0, 0, (r_values[6])**(-1)]])
+            
+            # Error
             Ed = np.array([[r_values[0]-self.d], \
                                 [r_values[3]-self.dd], \
                                 [r_values[6]-self.d]])
             
             # Formation motion control
-            Ab = np.array([[self.mut[3], 0, self.mut[4], 0], \
-                                [0, self.mut[3], 0, self.mut[4]]])
 
-
-            z = np.array([r_values[7], r_values[8], r_values[1], r_values[2]])
-            z = np.array([r_values[1], r_values[2], r_values[4], r_values[5]])
-
-            #z = [ edge 1 , edge 4]
             print 'self.zeta4', self.zeta4
             if self.zeta4[0] != 0 and self.zeta4[1] != 0:
                 print 'zeta4', self.zeta4
@@ -143,8 +133,8 @@ class controller:
                 Ug = self.Ug
             except AttributeError:
                 Ug = np.zeros((2,1))
-            # np.clip(self.Ug, -self.Ug_lim, self.Ug_lim, out=Ug)
-            U = Uf + Ug# - U0 + Ug
+            np.clip(self.Ug, -self.Ug_lim, self.Ug_lim, out=Ug)
+            U = Uf - U0 + Ug
             # U = self.c*BbDz.dot(Dzt).dot(Ed) + (Ab.dot(z)).reshape((2, 1))
             print "U = ", -U
                     
@@ -197,28 +187,27 @@ class controller:
         self.zeta4 = zeta4
         self.pub_zeta.publish(self.zeta4)
 
-    def Ug_cmd_vel(self, msg):
-        print 'msg', msg
-        self.Ug = np.array([[msg.linear.x], [msg.linear.y]], dtype=np.float32)
+    # def Ug_cmd_vel(self, msg):
+    #     print 'msg', msg
+    #     self.Ug = np.array([[msg.linear.x], [msg.linear.y]], dtype=np.float32)
 
     def formationMotion(self, msg):
-        pass
-        # p4 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
+        p4 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
         
-        # p3 = self.p34 + p4
-        # p2 = self.p24 + p4
-        # p1 = self.p14 + p4
+        p3 = self.p34 + p4
+        p2 = self.p24 + p4
+        p1 = self.p14 + p4
 
-        # pcen = np.array((p4 + p3 + p2 + p1)/4, dtype=np.float32)
-        # self.pub_pcen.publish(pcen)
-        # gammadot = -pcen + self.pGoal
-        # gamma = self.gamma_old + self.h*gammadot
-        # error = pcen-self.pGoal
-        # error_old = self.pcen_old - self.pGoal
-        # Ug =  -self.cP*(error) + self.cI * gamma + self.cD * (error-error_old)
-        # self.pcen_old = pcen
-        # self.gamma_old = gamma
-        # self.Ug = np.array(Ug, dtype=np.float32)
+        pcen = np.array((p4 + p3 + p2 + p1)/4, dtype=np.float32)
+        self.pub_pcen.publish(pcen)
+        gammadot = -pcen + self.pGoal
+        gamma = self.gamma_old + self.h*gammadot
+        error = pcen-self.pGoal
+        error_old = self.pcen_old - self.pGoal
+        Ug =  -self.cP*(error) + self.cI * gamma + self.cD * (error-error_old)
+        self.pcen_old = pcen
+        self.gamma_old = gamma
+        self.Ug = np.array(Ug, dtype=np.float32)
 
     def obstacleAvoidance(self, data):
         obstacles = data.data

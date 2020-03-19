@@ -88,7 +88,7 @@ class Controller:
         # Subscribe to the filtered odometry node
         rospy.Subscriber('/n_1/odometry/filtered', Odometry, self.formationMotion)
 
-        rospy.Subscriber('/n_1/Ug_cmd_vel', Twist, self.Ug_cmd_vel)
+        # rospy.Subscriber('/n_1/Ug_cmd_vel', Twist, self.Ug_cmd_vel)
         
         # subscribe to zeta_values topic of each controller
         rospy.Subscriber('/n_2/zeta_values', numpy_msg(Floats), self.zeta2_sub)
@@ -130,10 +130,10 @@ class Controller:
             except AttributeError:
                 Ug = np.zeros((2,1))
             # print 'Ug', Ug
-            # np.clip(self.Ug, -self.Ug_lim, self.Ug_lim, out=Ug)
-            
+            np.clip(self.Ug, -self.Ug_lim, self.Ug_lim, out=Ug)
+            print 'Uf', Uf
             # Control Law
-            U = Uf + Ug# - U0 + Ug
+            U = Uf  - U0 + Ug
             
             # Saturation
             # np.clip(U, -0.5, 0.5, out=U)
@@ -179,26 +179,25 @@ class Controller:
         print 'zeta1', zeta1
         self.pub_zeta.publish(self.zeta1)
 
-    def Ug_cmd_vel(self, msg):
-        print msg
-        self.Ug = np.array([[msg.linear.x], [msg.linear.y]], dtype=np.float32)
+    # def Ug_cmd_vel(self, msg):
+    #     print msg
+    #     self.Ug = np.array([[msg.linear.x], [msg.linear.y]], dtype=np.float32)
 
     def formationMotion(self, msg):
-        pass
-        # p1 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
-        # p4 = self.p41 + p1
-        # p3 = self.p31 + p1
-        # p2 = self.p21 + p1
-        # pcen = np.array((p1 + p4 + p3 + p2)/4, dtype=np.float32)
-        # self.pub_pcen.publish(pcen)
-        # gammadot = -pcen + self.pGoal
-        # gamma = self.gamma_old + self.h*gammadot
-        # error = pcen-self.pGoal
-        # error_old = self.pcen_old - self.pGoal
-        # Ug =  -self.cP*(error) + self.cI * gamma + self.cD * (error-error_old)
-        # self.pcen_old = pcen
-        # self.gamma_old = gamma
-        # self.Ug = np.array(Ug, dtype=np.float32)
+        p1 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
+        p4 = self.p41 + p1
+        p3 = self.p31 + p1
+        p2 = self.p21 + p1
+        pcen = np.array((p1 + p4 + p3 + p2)/4, dtype=np.float32)
+        self.pub_pcen.publish(pcen)
+        gammadot = -pcen + self.pGoal
+        gamma = self.gamma_old + self.h*gammadot
+        error = pcen-self.pGoal
+        error_old = self.pcen_old - self.pGoal
+        Ug =  -self.cP*(error) + self.cI * gamma + self.cD * (error-error_old)
+        self.pcen_old = pcen
+        self.gamma_old = gamma
+        self.Ug = np.array(Ug, dtype=np.float32)
 
     def obstacleAvoidance(self, data):
         obstacles = data.data

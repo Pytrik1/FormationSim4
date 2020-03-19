@@ -88,7 +88,7 @@ class Controller:
         # Subscribe to the filtered odometry node
         rospy.Subscriber('/n_2/odometry/filtered', Odometry, self.formationMotion)
 
-        rospy.Subscriber('/n_2/Ug_cmd_vel', Twist, self.Ug_cmd_vel)  
+        # rospy.Subscriber('/n_2/Ug_cmd_vel', Twist, self.Ug_cmd_vel)  
         
         # subscribe to zeta_values topic of each controller
         rospy.Subscriber('/n_1/zeta_values', numpy_msg(Floats), self.zeta1_sub)
@@ -111,13 +111,7 @@ class Controller:
             self.p32 = np.array([[r_values[7]], [r_values[8]]])
             
             # Formation shape control
-            BbDz = np.array([[r_values[1], r_values[4], r_values[7]], \
-                                  [r_values[2], r_values[5], r_values[8]]])
-
-            Dzt = np.array([[(r_values[0])**(-1),       0,                 0               ], \
-                            [      0,            (r_values[3])**(-1),      0               ], \
-                            [      0,                   0,           (r_values[6])**(-1)]  ])
-
+            
             # Ed = np.array([[r_values[0]-self.d], \
             #                [r_values[3]-self.dd], \
             #                [r_values[6]-self.d]])
@@ -135,10 +129,6 @@ class Controller:
             # print "Distance = ", [r_values[0], r_values[3], r_values[6]]
 
             # Formation motion control
-            Ab = np.array([[self.mut[0], 0, self.mu[1], 0], \
-                                [0, self.mut[0], 0, self.mu[1]]])
-            z = np.array([r_values[4], r_values[5], r_values[1], r_values[2]])
-            z = np.array([r_values[1], r_values[2], r_values[7], r_values[8]])
 
             if self.zeta2[0] != 0 and self.zeta2[1] != 0:
                 print 'zeta2', self.zeta2
@@ -153,8 +143,8 @@ class Controller:
                 Ug = self.Ug
             except AttributeError:
                 Ug = np.zeros((2,1))
-            # np.clip(self.Ug, -self.Ug_lim, self.Ug_lim, out=Ug)
-            U = Uf + Ug# - U0 + Ug
+            np.clip(self.Ug, -self.Ug_lim, self.Ug_lim, out=Ug)
+            U = Uf - U0 + Ug
 
                     
             # Saturation
@@ -206,27 +196,26 @@ class Controller:
         self.zeta2 = zeta2
         self.pub_zeta.publish(self.zeta2)
 
-    def Ug_cmd_vel(self, msg):
-        self.Ug = np.array([[msg.linear.x], [msg.linear.y]], dtype=np.float32)
+    # def Ug_cmd_vel(self, msg):
+    #     self.Ug = np.array([[msg.linear.x], [msg.linear.y]], dtype=np.float32)
 
     def formationMotion(self, msg):
-        pass
-    #     self.location = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
-    #     # print 'self.location', self.location
-    #     p1 = self.p12 + self.location
-    #     p4 = self.p42 + self.location
-    #     p3 = self.p32 + self.location
+        self.location = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
+        # print 'self.location', self.location
+        p1 = self.p12 + self.location
+        p4 = self.p42 + self.location
+        p3 = self.p32 + self.location
 
-    #     pcen = np.array((self.location + p1 + p4 + p3)/4, dtype=np.float32)
-    #     self.pub_pcen.publish(pcen)
-    #     gammadot = -pcen + self.pGoal
-    #     gamma = self.gamma_old + self.h*gammadot
-    #     error = pcen-self.pGoal
-    #     error_old = self.pcen_old - self.pGoal
-    #     Ug =  -self.cP*(error) + self.cI * gamma + self.cD * (error-error_old)
-    #     self.pcen_old = pcen
-    #     self.gamma_old = gamma
-    #     self.Ug = np.array(Ug, dtype=np.float32)
+        pcen = np.array((self.location + p1 + p4 + p3)/4, dtype=np.float32)
+        self.pub_pcen.publish(pcen)
+        gammadot = -pcen + self.pGoal
+        gamma = self.gamma_old + self.h*gammadot
+        error = pcen-self.pGoal
+        error_old = self.pcen_old - self.pGoal
+        Ug =  -self.cP*(error) + self.cI * gamma + self.cD * (error-error_old)
+        self.pcen_old = pcen
+        self.gamma_old = gamma
+        self.Ug = np.array(Ug, dtype=np.float32)
 
     def obstacleAvoidance(self, data):
         obstacles = data.data
