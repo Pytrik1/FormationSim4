@@ -1,6 +1,6 @@
 FormationSim4 is a package to simulate N Nexus robots with conctrollers and dataprocessing nodes that detect n agents rather than being fixed to a square formation
 
-"lasmulticontrol" should be placed in your "catkin_ws/src" folder, you will also need some components from the "nexus" folder from the DTPA Lab and the "Hector_sensors_description" folder which can be found in the following website: "https://github.com/tu-darmstadt-ros-pkg/hector_models" (maybe some other general gazebo packages to run the sensors) 
+this git repository should be cloned in your "catkin_ws/src" folder, you will also need some components from the "nexus" folder from the DTPA Lab and the "Hector_sensors_description" folder which can be found in the following website: "https://github.com/tu-darmstadt-ros-pkg/hector_models" (maybe some other general gazebo packages to run the sensors) 
 
 The purpose of these scripts is to simulate a formation of 4 nexus robots DISTRIBUTEDLY controlled using rplidar.
 
@@ -8,24 +8,28 @@ The purpose of these scripts is to simulate a formation of 4 nexus robots DISTRI
 ----------------------------------------------------------------------------
 FOLDERS:
 
-lasmultidescription -- this folder includes launch files for rviz, and urdf files that determine the shapes of the robots and specs of the lidar scanner
+lasmultidescription4 -- this folder includes launch files for rviz, and urdf files that determine the shapes of the robots and specs of the lidar scanner
 
-lasmultigazebo -- this folder includes the gazebo launch files
+lasmultigazebo4 -- this folder contains the gazebo launch files
 
-lasmulticontrol -- this folder includes the controllers that make the robots go into formation
+lasmulticontrol4 -- this folder contains the controllers that make the robots go into formation
 
 ----------------------------------------------------------------------------
 HOW TO RUN THE GAZEBO SIMULATION:
 
-in "lasmultigazebo/launch"
+in "lasmultigazebo4/launch"
 
-roslaunch nexus_world.launch
+roslaunch N_nexus_world.launch
 
 ----------------------------------------------------------------------------
 HOW TO START THE FORMATION CONTROL:
 
-in "lasmulticontrol4" run the following commands in order in the terminal
+in "lasmultigazebo4/launch" run the following commands in order in the terminal
 
-./dataprocessing_nexus
+roslaunch data_processing.launch
 
-./controllers_nexus
+roslaunch control_decentralised.launch
+
+HOW TO START THE PATH PLANNER:
+
+in "lasmultigazebo4/launch", run the following command
