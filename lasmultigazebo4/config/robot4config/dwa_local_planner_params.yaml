@@ -20,5 +20,5 @@ DWAPlannerROS:
   vx_samples: 20
   stop_time_bufer: 0.02
   goal_distance_bias: 32
-  path_distance_bias: 25
+  path_distance_bias: 5
 

@@ -105,29 +105,32 @@ class determine_r_values:
                             scandata2[i] = 0  
                     # set all robotdata to zero                                
                     for i, v in enumerate(self.robots):
-                        if v is not None:
-                            z, q = self.robots[i][1], self.robots[i][1] 
-                            while True:
-                                if scandata2[z] != 0:
-                                    z -= 1 
-                                if scandata2[q] != 0 and q != 359:
-                                    q += 1
-                                elif q == 359:
-                                    q -= 360
-                                    z -= 360
-                                if scandata2[z] == 0 and scandata2[q] == 0:
-                                    if z < 0:
-                                        scandata2[z:] = scandata2[:q] = 0
-                                    else:
-                                        scandata2[z:q] = 0
-                                    break
-                        else:
-                            print i, v, 'is NONE'
+                        z, q = self.robots[i][1], self.robots[i][1] 
+                        while True:
+                            if abs(scandata2[z]-scandata2[z-1]) < 0.2:
+                                z -= 1
+                            else:
+                                start = z
+                            if abs(scandata2[q]-scandata2[q-1]) < 0.2 and q != 359:
+                                q += 1
+                            elif q == 359:
+                                q -= 359
+                            else:
+                                end = q
+                            try:
+                                if start < 0 or start > end:
+                                    scandata2[start:] = scandata2[:end] = 0
+                                else:
+                                    scandata2[start:end] = 0
+                                del start, end
+                                break
+                            except UnboundLocalError:
+                                pass
                     
                     
                     scandata3 = scandata2.copy()
                     scandata3 = [float('Inf') if x<=0 else x for x in scandata2]
-                    print'scandata2', scandata3
+
                     scan.ranges = scandata3
                     for idx, val in enumerate(scandata2):
                         if (val < self.min_range) or (val > 13):
