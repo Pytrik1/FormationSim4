@@ -14,6 +14,11 @@ if __name__ == '__main__':
         br.sendTransform((0.0, 0.0, 0.0),
                          (0.0, 0.0, 0.0, 1.0),
                          rospy.Time.now(),
+                         "odom",
+                         "map")
+        br.sendTransform((0.0, 0.0, 0.0),
+                         (0.0, 0.0, 0.0, 1.0),
+                         rospy.Time.now(),
                          "n_1/odom",
                          "odom")
         br.sendTransform((0.0, 0.0, 0.0),

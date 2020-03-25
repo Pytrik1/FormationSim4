@@ -1,7 +1,7 @@
 #Configuration for global costmap
 #
 global_costmap:
-  global_frame: n_4/odom
+  global_frame: map
   robot_base_frame: n_4/carrot4 # n_4/carrot4 # n_1base_footprint
   update_frequency: 5.0
   static_map: false

@@ -23,12 +23,14 @@
       <rosparam file="$(find nexus)/config/nexus.yaml" command="load" />
       <param name="sim" value="$(arg sim)" />
       <param name="port" value="$(arg nexusport)" />
-      <param name="namespace" value="$(arg pre)" />  <!-- for the frames --> 
+      <param name="namespace" value="$(arg pre)" /> 
     </node>-->
 
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
       <param name="publish_frequency" type="double" value="20.0" />
     </node>
+    
+    <node name="spawn_nexus_$(arg N)" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -param robot_description -x 0 -y 0 -Y 0 -model nexus_$(arg N)"/> 
 
   </group>
 
@@ -38,6 +40,14 @@
       <arg name="N" value="$(eval arg('N') - 1)"/>
   </include>
   
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find lasmultigazebo4)/worlds/wall_world.world"/>
+    <arg name="debug" value="false" />
+    <arg name="gui" value="true" />
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="headless" value="false"/>
+  </include> 
 
 
 </launch>

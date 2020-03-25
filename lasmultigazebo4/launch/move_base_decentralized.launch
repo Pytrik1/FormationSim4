@@ -1,15 +1,16 @@
 <launch>
 
   <master auto="start"/>
- <!-- Run the map server  
-    <node name="map_server" pkg="map_server" type="map_server" args="$(find my_map_package)/my_map.pgm my_map_resolution"/>-->
+  Run the map server  
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find lasmultigazebo4)/maps/my_map.yaml"/>
   <node pkg="lasmulticontrol4" type="fixed_tf_broadcaster.py" name="broadcaster_fixed" />
   
   <group ns="n_1">
 
    <node pkg="amcl" type="amcl" name="amcl">
     <rosparam file="$(find lasmultigazebo4)/config/amcl_params.yaml" command="load" />
-    <remap from="scan" to="n_1scan" />
+    <remap from="scan" to="/n_1scan"/>
+    
    </node>
 
    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
@@ -28,7 +29,7 @@
 
    <node pkg="amcl" type="amcl" name="amcl">
     <rosparam file="$(find lasmultigazebo4)/config/amcl_params.yaml" command="load" />
-    <remap from="scan" to="n_2scan" />
+    <remap from="scan" to="/n_2scan"/>
    </node>
 
    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
@@ -47,7 +48,7 @@
 
    <node pkg="amcl" type="amcl" name="amcl">
     <rosparam file="$(find lasmultigazebo4)/config/amcl_params.yaml" command="load" />
-    <remap from="scan" to="n_3scan" />
+    <remap from="scan" to="/n_3scan"/>
    </node>
 
    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
@@ -66,7 +67,7 @@
 
    <node pkg="amcl" type="amcl" name="amcl">
     <rosparam file="$(find lasmultigazebo4)/config/amcl_params.yaml" command="load" />
-    <remap from="scan" to="n_4scan" />
+    <remap from="scan" to="/n_4scan"/>
    </node>
 
    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">

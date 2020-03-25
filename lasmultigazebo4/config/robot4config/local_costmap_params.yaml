@@ -1,7 +1,7 @@
 #Configuration for local costmap
 #
 local_costmap:
-  global_frame: n_4/odom
+  global_frame: map
   robot_base_frame: n_4/carrot4 # n_4/carrot4
   update_frequency: 5.0
   publish_frequency: 2.0

@@ -7,8 +7,8 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 def movebase_client():
     
-    finalpose_x = -7.0
-    finalpose_y = 0.0
+    finalpose_x = 3.0
+    finalpose_y = 3.0
 
     client1 = actionlib.SimpleActionClient('/n_1/move_base',MoveBaseAction)
     client1.wait_for_server()
