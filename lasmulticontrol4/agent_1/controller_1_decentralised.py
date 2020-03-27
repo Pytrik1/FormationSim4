@@ -9,6 +9,8 @@ from rospy_tutorials.msg import Floats
 from rospy.numpy_msg import numpy_msg
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Point32
+from move_base_msgs.msg import MoveBaseActionGoal
 from math import exp
 import yaml
 import params
@@ -80,14 +82,29 @@ class Controller:
         self.velocity = Twist()
 
         self.pub_zeta = rospy.Publisher('/n_1/zeta_values', numpy_msg(Floats), queue_size=1)
-        self.pub_pcen = rospy.Publisher('/n_1/pcen', numpy_msg(Floats), queue_size=1)
+        # self.pub_pcen = rospy.Publisher('/n_1/pcen', numpy_msg(Floats), queue_size=1)
 
+        self.pub_formationError21 = rospy.Publisher('/n_1/forErr21', numpy_msg(Floats), queue_size=1)
+        self.pub_formationError41 = rospy.Publisher('/n_1/forErr41', numpy_msg(Floats), queue_size=1)
         # subscribe to r_values topic
         rospy.Subscriber('/n_1/r_values', numpy_msg(Floats), self.controller)
         rospy.Subscriber('/n_1/obstacles', numpy_msg(Floats), self.obstacleAvoidance)
 
         # Subscribe to the filtered odometry node
         rospy.Subscriber('/n_1/odometry/filtered', Odometry, self.formationMotion)
+        
+        # Subscribe to accurately measure centre of formation
+        rospy.Subscriber('/n_2/odometry/filtered', Odometry, self.p2)
+        rospy.Subscriber('/n_3/odometry/filtered', Odometry, self.p3)
+        rospy.Subscriber('/n_4/odometry/filtered', Odometry, self.p4)
+        
+        self.pub_pcen = rospy.Publisher('/pcen', Point32, queue_size=1)
+        self.centre = Point32()
+
+        self.pub_errorgroup = rospy.Publisher('/goalError', Point32, queue_size=1)
+        self.error = Point32()
+
+        rospy.Subscriber('n_1/move_base/goal', MoveBaseActionGoal, self.goal_location)
 
         rospy.Subscriber('/n_1/Ug_cmd_vel', Twist, self.Ug_cmd_vel)
         
@@ -124,6 +141,12 @@ class Controller:
                 U0 = np.zeros((2,1))
             # Control law
             Uf = self.cf * (self.p21-self.p21_star+self.p41-self.p41_star)
+
+            # Errpr
+            Error21 = np.linalg.norm(np.float32(self.p21-self.p21_star))
+            Error41 = np.linalg.norm(np.float32(self.p41-self.p41_star))
+
+            self.pcen_real = np.array((self.p1 + self.p2 + self.p3 + self.p4)/4.0, dtype=np.float32)
 
             # Nelsons path planning control
             try:
@@ -162,7 +185,8 @@ class Controller:
             # publish
             self.publish_control_inputs(U[0], U[1])
             self.publish_zeta(self.zeta1)
-            
+            self.publish_Errors(Error21, Error41)
+            self.publish_pcen(self.pcen_real)
 
         elif 10 < self.running < 1000:
             self.shutdown()
@@ -179,19 +203,50 @@ class Controller:
         self.zeta1 = zeta1
         print 'zeta1', zeta1
         self.pub_zeta.publish(self.zeta1)
+    
+    def publish_Errors(self, error21, error41):
+        self.pub_formationError21.publish(np.array([error21]))
+        self.pub_formationError41.publish(np.array([error41]))
+
+    def publish_pcen(self, pcen):
+        self.centre.x = pcen[0]
+        self.centre.y = pcen[1]
+        self.pub_pcen.publish(self.centre)
+
+    def publish_errorGroup(self, errorgroup):
+        self.error.x = errorgroup[0]
+        self.error.y = errorgroup[1]
+        self.pub_errorgroup.publish(self.error)
+
+    def goal_location(self, msg):
+        self.goal = np.array([[msg.target_pose.pose.position.x], [msg.target_pose.pose.position.y]], dtype=np.float32)
+        print(self.goal)
+        # error_group = self.pcen_real-self.goal
+        # self.publish_errorGroup(error_group)
+
+    def p2(self, msg):
+        self.p2 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
+
+    def p3(self, msg):
+        self.p3 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
+
+    def p4(self, msg):
+        self.p4 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
 
     def Ug_cmd_vel(self, msg):
         print msg
         self.Ug = np.array([[msg.linear.x], [msg.linear.y]], dtype=np.float32)
 
     def formationMotion(self, msg):
-        p1 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
-        p4 = self.p41 + p1
-        p3 = self.p31 + p1
-        p2 = self.p21 + p1
-        pcen = np.array((p1 + p4 + p3 + p2)/4, dtype=np.float32)
+        self.p1 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
+        p4 = self.p41 + self.p1
+        p3 = self.p31 + self.p1
+        p2 = self.p21 + self.p1
+        pcen = np.array((self.p1 + p4 + p3 + p2)/4, dtype=np.float32)
         self.Pcenlog = np.append(self.Pcenlog, pcen)
-
+        # self.p1log = np.append(self.p1log, p1)
+        # self.p2log = np.append(self.p2log, p2)
+        # self.p3log = np.append(self.p1log, p1)
         # pcen = np.array((p1 + p4 + p3 + p2)/4, dtype=np.float32)
         # self.pub_pcen.publish(pcen)
         # gammadot = -pcen + self.pGoal

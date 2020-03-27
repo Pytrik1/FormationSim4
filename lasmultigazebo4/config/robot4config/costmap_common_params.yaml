@@ -2,7 +2,7 @@
 #
 obstacle_range: 3.0
 raytrace_range: 3.0
-footprint: [[-0.8, -0.8], [-0.8, 0.8], [0.8, 0.8], [0.8, 0.0], [0.8, -0.8]]
+footprint: [[-0.82, -0.82], [-0.82, 0.82], [0.82, 0.82], [0.82, 0.0], [0.82, -0.82]]
 # robot_radius: 0.9
 
 plugins:
@@ -20,5 +20,5 @@ static_layer:
   subscribe_to_updates: true
 
 inflation_layer:
-  inflation_radius: 0.82
+  inflation_radius: 0.87
   cost_scaling_factor: 1.0

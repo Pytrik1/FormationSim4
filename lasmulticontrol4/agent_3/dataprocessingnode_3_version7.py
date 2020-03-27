@@ -109,13 +109,13 @@ class determine_r_values:
                         if self.robots[i] is not None:
                             z, q = self.robots[i][1], self.robots[i][1] 
                             while True:
-                                if abs(scandata2[z]-scandata2[z-1]) < 0.015 and z != 0:
+                                if abs(scandata2[z]-scandata2[z-1]) < 0.05 and z != 0:
                                     z -= 1
                                 elif z == 0:
                                     z += 359
                                 else:
                                     start = z
-                                if abs(scandata2[q]-scandata2[q-1]) < 0.015 and q != 359:
+                                if abs(scandata2[q]-scandata2[q-1]) < 0.05 and q != 359:
                                     q += 1
                                 elif q == 359:
                                     q -= 359
