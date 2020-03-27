@@ -301,7 +301,7 @@ class Controller:
         pl.ylabel("Error [m]")
         pl.grid()
         pl.legend()
-        
+        pl.savefig('/home/s2604833/catkin_ws/src/FormationSim4/lasmulticontrol4/agent_2/inter_agent_error.eps')
         pl.figure(3)
         pl.title("Input velocity Nexus 2 ")
         pl.plot(self.time_log, self.U_log, label="pdot_nx2", color='g')
@@ -309,7 +309,7 @@ class Controller:
         pl.ylabel("Velocity [m/s]")
         pl.grid()
         pl.legend()
-        
+        pl.savefig('/home/s2604833/catkin_ws/src/FormationSim4/lasmulticontrol4/agent_2/input_vel.eps')
         pl.pause(0)
 
 

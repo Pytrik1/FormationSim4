@@ -11,31 +11,31 @@ if __name__ == '__main__':
     rate = rospy.Rate(10.0)
     while not rospy.is_shutdown():
         #global coordinate frame odom
-        br.sendTransform((0.0, 0.0, 0.0),
-                         (0.0, 0.0, 0.0, 1.0),
-                         rospy.Time.now(),
-                         "odom",
-                         "map")
-        br.sendTransform((0.0, 0.0, 0.0),
-                         (0.0, 0.0, 0.0, 1.0),
-                         rospy.Time.now(),
-                         "n_1/odom",
-                         "odom")
-        br.sendTransform((0.0, 0.0, 0.0),
-                         (0.0, 0.0, 0.0, 1.0),
-                         rospy.Time.now(),
-                         "n_2/odom",
-                         "odom")
-        br.sendTransform((0.0, 0.0, 0.0),
-                         (0.0, 0.0, 0.0, 1.0),
-                         rospy.Time.now(),
-                         "n_3/odom",
-                         "odom")
-        br.sendTransform((0.0, 0.0, 0.0),
-                         (0.0, 0.0, 0.0, 1.0),
-                         rospy.Time.now(),
-                         "n_4/odom",
-                         "odom")
+        # br.sendTransform((0.0, 0.0, 0.0),
+        #                  (0.0, 0.0, 0.0, 1.0),
+        #                  rospy.Time.now(),
+        #                  "n_1/odom",
+        #                  "map")
+        # br.sendTransform((0.0, 0.0, 0.0),
+        #                  (0.0, 0.0, 0.0, 1.0),
+        #                  rospy.Time.now(),
+        #                  "n_2/odom",
+        #                  "map")
+        # br.sendTransform((0.0, 0.0, 0.0),
+        #                  (0.0, 0.0, 0.0, 1.0),
+        #                  rospy.Time.now(),
+        #                  "n_3/odom",
+        #                  "map")
+        # br.sendTransform((0.0, 0.0, 0.0),
+        #                  (0.0, 0.0, 0.0, 1.0),
+        #                  rospy.Time.now(),
+        #                  "n_4/odom",
+        #                  "map")
+        # br.sendTransform((0.0, 0.0, 0.0),
+        #                  (0.0, 0.0, 0.0, 1.0),
+        #                  rospy.Time.now(),
+        #                  "n_4/odom",
+        #                  "odom")
         # carrot transforms
         br.sendTransform((0.4, 0.4, 0.0),
                          (0.0, 0.0, 0.0, 1.0),

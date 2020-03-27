@@ -13,12 +13,12 @@ DWAPlannerROS:
   holonomic_robot: true
   yaw_goal_tolerance: 6.283
   meter_scoring: true
-  vth_samples: 0
+  vth_samples: 20
   max_trans_vel: 0.5
   xy_goal_tolerance: 0.2
   vy_samples: 20
   vx_samples: 20
-  stop_time_bufer: 0.02
+  stop_time_bufer: 0.1
   goal_distance_bias: 32
-  path_distance_bias: 5
+  path_distance_bias: 0
 

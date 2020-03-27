@@ -83,7 +83,7 @@ class determine_r_values:
         scan.angle_max = 3.14159011841
         scan.angle_increment = 6.283/self.num_readings
         scan.time_increment = (1.0 / self.laser_frequency) /(self.num_readings)
-        scan.range_min = 0.3
+        scan.range_min = 0.2
         scan.range_max = 30.0
         
         
@@ -106,27 +106,32 @@ class determine_r_values:
                             scandata2[i] = 0  
                     # set all robotdata to zero                                
                     for i, v in enumerate(self.robots):
-                        z, q = self.robots[i][1], self.robots[i][1] 
-                        while True:
-                            if abs(scandata2[z]-scandata2[z-1]) < 0.2:
-                                z -= 1
-                            else:
-                                start = z
-                            if abs(scandata2[q]-scandata2[q-1]) < 0.2 and q != 359:
-                                q += 1
-                            elif q == 359:
-                                q -= 359
-                            else:
-                                end = q
-                            try:
-                                if start < 0 or start > end:
-                                    scandata2[start:] = scandata2[:end] = 0
+                        if self.robots[i] is not None:
+                            z, q = self.robots[i][1], self.robots[i][1] 
+                            while True:
+                                if abs(scandata2[z]-scandata2[z-1]) < 0.015 and z != 0:
+                                    z -= 1
+                                elif z == 0:
+                                    z += 359
                                 else:
-                                    scandata2[start:end] = 0
-                                del start, end
-                                break
-                            except UnboundLocalError:
-                                pass
+                                    start = z
+                                if abs(scandata2[q]-scandata2[q-1]) < 0.015 and q != 359:
+                                    q += 1
+                                elif q == 359:
+                                    q -= 359
+                                else:
+                                    end = q
+                                try:
+                                    if start < 0 or start > end:
+                                        scandata2[start:] = scandata2[:end] = 0
+                                    else:
+                                        scandata2[start:end] = 0
+                                    del start, end
+                                    break
+                                except UnboundLocalError:
+                                    pass
+                        else:
+                            self.k = 0
                     
 
                     scandata3 = scandata2.copy()

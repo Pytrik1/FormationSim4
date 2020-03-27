@@ -63,6 +63,7 @@ class Controller:
         self.E1_log = np.array([])
         self.E4_log = np.array([])
         self.Un = np.float32([])
+        self.Pcenlog = np.array([])
         self.U_log = np.array([])
         self.sum_U_log = np.zeros((2,1))
         self.time = np.float64([])
@@ -184,11 +185,13 @@ class Controller:
         self.Ug = np.array([[msg.linear.x], [msg.linear.y]], dtype=np.float32)
 
     def formationMotion(self, msg):
-        pass
-        # p1 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
-        # p4 = self.p41 + p1
-        # p3 = self.p31 + p1
-        # p2 = self.p21 + p1
+        p1 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
+        p4 = self.p41 + p1
+        p3 = self.p31 + p1
+        p2 = self.p21 + p1
+        pcen = np.array((p1 + p4 + p3 + p2)/4, dtype=np.float32)
+        self.Pcenlog = np.append(self.Pcenlog, pcen)
+
         # pcen = np.array((p1 + p4 + p3 + p2)/4, dtype=np.float32)
         # self.pub_pcen.publish(pcen)
         # gammadot = -pcen + self.pGoal
@@ -278,7 +281,7 @@ class Controller:
         pl.ylabel("Error [m]")
         pl.grid()
         pl.legend()
-        
+        pl.savefig('/home/s2604833/catkin_ws/src/FormationSim4/lasmulticontrol4/agent_1/inter_agent_error.eps')
         pl.figure(1)
         pl.title("Input velocity Nexus 1 ")
         pl.plot(self.time_log, self.U_log, label="pdot_nx1", color='b')
@@ -286,7 +289,15 @@ class Controller:
         pl.ylabel("Velocity [m/s]")
         pl.grid()
         pl.legend()
-        
+        pl.savefig('/home/s2604833/catkin_ws/src/FormationSim4/lasmulticontrol4/agent_1/input_value_nexus1.eps')
+        pl.figure(2)
+        pl.title("Path of the formation's centroid")
+        pl.plot(self.Pcenlog, label='centroid', color='b')
+        pl.xlabel("x")
+        pl.ylabel("y")
+        pl.grid()
+        pl.legend()
+        pl.savefig('/home/s2604833/catkin_ws/src/FormationSim4/lasmulticontrol4/agent_1/pcen_path.eps')
         pl.pause(0)
 
 if __name__ == '__main__':

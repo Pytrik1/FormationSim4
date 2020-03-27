@@ -2,7 +2,7 @@
 #
 global_costmap:
   global_frame: map
-  robot_base_frame: n_1/carrot1
+  robot_base_frame: n_1/carrot1 # n_1base_footprint # 
   update_frequency: 5.0
   static_map: true
   width: 40.0 
