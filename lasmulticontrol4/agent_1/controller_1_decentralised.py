@@ -94,9 +94,9 @@ class Controller:
         rospy.Subscriber('/n_1/odometry/filtered', Odometry, self.formationMotion)
         
         # Subscribe to accurately measure centre of formation
-        rospy.Subscriber('/n_2/odometry/filtered', Odometry, self.p2)
-        rospy.Subscriber('/n_3/odometry/filtered', Odometry, self.p3)
-        rospy.Subscriber('/n_4/odometry/filtered', Odometry, self.p4)
+        rospy.Subscriber('/n_2/odometry/filtered', Odometry, self.p_nexus2)
+        rospy.Subscriber('/n_3/odometry/filtered', Odometry, self.p_nexus3)
+        rospy.Subscriber('/n_4/odometry/filtered', Odometry, self.p_nexus4)
         
         self.pub_pcen = rospy.Publisher('/pcen', Point32, queue_size=1)
         self.centre = Point32()
@@ -134,10 +134,8 @@ class Controller:
             
             
             if self.zeta1[0] != 0 and self.zeta1[1] != 0:
-                print 'zeta1', self.zeta1
                 U0 = self.zeta1
             else:
-                print 'zeta1 set to zero'
                 U0 = np.zeros((2,1))
             # Control law
             Uf = self.cf * (self.p21-self.p21_star+self.p41-self.p41_star)
@@ -146,8 +144,17 @@ class Controller:
             Error21 = np.linalg.norm(np.float32(self.p21-self.p21_star))
             Error41 = np.linalg.norm(np.float32(self.p41-self.p41_star))
 
-            self.pcen_real = np.array((self.p1 + self.p2 + self.p3 + self.p4)/4.0, dtype=np.float32)
+            try:
+                self.pcen_real = np.array((self.p1 + self.p2 + self.p3 + self.p4)/4.0, dtype=np.float32)
+                self.publish_pcen(self.pcen_real)          
+            except AttributeError:
+                pass
 
+            try:
+                errorgroup = self.pcen_real - self.goal
+                self.publish_errorGroup(errorgroup)
+            except AttributeError:
+                pass 
             # Nelsons path planning control
             try:
                 Ug = self.Ug
@@ -155,7 +162,7 @@ class Controller:
                 Ug = np.zeros((2,1))
             # print 'Ug', Ug
             # np.clip(self.Ug, -self.Ug_lim, self.Ug_lim, out=Ug)
-            print 'Uf', Uf
+
             # Control Law
             U = Uf  + Ug# - U0 + Ug
             
@@ -186,7 +193,7 @@ class Controller:
             self.publish_control_inputs(U[0], U[1])
             self.publish_zeta(self.zeta1)
             self.publish_Errors(Error21, Error41)
-            self.publish_pcen(self.pcen_real)
+            
 
         elif 10 < self.running < 1000:
             self.shutdown()
@@ -201,7 +208,6 @@ class Controller:
     def publish_zeta(self, zeta1):
         '''communicates the state variable zeta to the neighbouring agents'''
         self.zeta1 = zeta1
-        print 'zeta1', zeta1
         self.pub_zeta.publish(self.zeta1)
     
     def publish_Errors(self, error21, error41):
@@ -219,31 +225,33 @@ class Controller:
         self.pub_errorgroup.publish(self.error)
 
     def goal_location(self, msg):
-        self.goal = np.array([[msg.target_pose.pose.position.x], [msg.target_pose.pose.position.y]], dtype=np.float32)
+        self.goal = np.array([[msg.goal.target_pose.pose.position.x], [msg.goal.target_pose.pose.position.y]], dtype=np.float32)
         print(self.goal)
         # error_group = self.pcen_real-self.goal
         # self.publish_errorGroup(error_group)
 
-    def p2(self, msg):
+    def p_nexus2(self, msg):
         self.p2 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
 
-    def p3(self, msg):
+    def p_nexus3(self, msg):
         self.p3 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
 
-    def p4(self, msg):
+    def p_nexus4(self, msg):
         self.p4 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
 
     def Ug_cmd_vel(self, msg):
-        print msg
         self.Ug = np.array([[msg.linear.x], [msg.linear.y]], dtype=np.float32)
 
     def formationMotion(self, msg):
         self.p1 = np.array([[msg.pose.pose.position.x], [msg.pose.pose.position.y]])
-        p4 = self.p41 + self.p1
-        p3 = self.p31 + self.p1
-        p2 = self.p21 + self.p1
-        pcen = np.array((self.p1 + p4 + p3 + p2)/4, dtype=np.float32)
-        self.Pcenlog = np.append(self.Pcenlog, pcen)
+        try:
+            p4 = self.p41 + self.p1
+            p3 = self.p31 + self.p1
+            p2 = self.p21 + self.p1
+            pcen = np.array((self.p1 + p4 + p3 + p2)/4, dtype=np.float32)
+            self.Pcenlog = np.append(self.Pcenlog, pcen)
+        except AttributeError:
+            pass
         # self.p1log = np.append(self.p1log, p1)
         # self.p2log = np.append(self.p2log, p2)
         # self.p3log = np.append(self.p1log, p1)
@@ -261,24 +269,23 @@ class Controller:
     def obstacleAvoidance(self, data):
         obstacles = data.data
         
-        zeta2 = np.array([[self.zeta2[0]],[self.zeta2[1]]])
-        zeta3 = np.array([[self.zeta3[0]],[self.zeta3[1]]])
-        zeta4 = np.array([[self.zeta4[0]],[self.zeta4[1]]])
+        try:
+            zeta2 = np.array([[self.zeta2[0]],[self.zeta2[1]]])
+            zeta3 = np.array([[self.zeta3[0]],[self.zeta3[1]]])
+            zeta4 = np.array([[self.zeta4[0]],[self.zeta4[1]]])
 
-        print 'zeta1', zeta2
-        print 'zeta2', zeta3
-        print 'zeta4', zeta4
-
-        if obstacles[0] > 6 or not obstacles.any():
-            self.zeta1 = np.zeros((2,1), dtype=np.float32)
-            return
-        p01_obs01 = np.array([[obstacles[1]], [obstacles[2]]]) 
-        norm_p01_obs01 = obstacles[0]
-        alpha1_1 = np.divide(p01_obs01, np.square(norm_p01_obs01)) - self.r_safe
-        zeta1dot = self.czeta*((zeta2-self.zeta1_old)+(zeta3-self.zeta1_old)+(zeta4-self.zeta1_old))+self.calpha*alpha1_1
-        zeta1 = self.zeta1_old + self.h*zeta1dot
-        self.zeta1_old = zeta1
-        self.zeta1 = np.array(zeta1/(1+exp(-params.cO*(-obstacles[0]+self.r_safe))), dtype=np.float32)
+            if obstacles[0] > 6 or not obstacles.any():
+                self.zeta1 = np.zeros((2,1), dtype=np.float32)
+                return
+            p01_obs01 = np.array([[obstacles[1]], [obstacles[2]]]) 
+            norm_p01_obs01 = obstacles[0]
+            alpha1_1 = np.divide(p01_obs01, np.square(norm_p01_obs01)) - self.r_safe
+            zeta1dot = self.czeta*((zeta2-self.zeta1_old)+(zeta3-self.zeta1_old)+(zeta4-self.zeta1_old))+self.calpha*alpha1_1
+            zeta1 = self.zeta1_old + self.h*zeta1dot
+            self.zeta1_old = zeta1
+            self.zeta1 = np.array(zeta1/(1+exp(-params.cO*(-obstacles[0]+self.r_safe))), dtype=np.float32)
+        except AttributeError:
+            pass
 
     def saturation(self, U):
         v_max = params.v_max
