@@ -62,7 +62,7 @@
   </include>
   
   <include file="$(find gazebo_ros)/launch/empty_world.launch" if="$(eval arg('N') == arg('N_check'))">
-    <arg name="world_name" value="$(find lasmultigazebo4)/worlds/wall_world_with_obstacleCourse.world"/>
+    <arg name="world_name" value="$(find lasmultigazebo4)/worlds/wall_world.world"/>
     <arg name="debug" value="false" />
     <arg name="gui" value="true" />
     <arg name="paused" value="false"/>

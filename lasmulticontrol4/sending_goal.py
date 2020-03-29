@@ -4,11 +4,16 @@
 import rospy
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from geometry_msgs.msg import Point32
+
+
 
 def movebase_client():
     
-    finalpose_x = 1.0
-    finalpose_y = 0.0
+    finalpose_x = 5.0
+    finalpose_y = 11.0
+
+    # current_pose_x = 
 
     client1 = actionlib.SimpleActionClient('/n_1/move_base',MoveBaseAction)
     client1.wait_for_server()

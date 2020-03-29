@@ -85,6 +85,7 @@ class Controller:
         # self.pub_pcen = rospy.Publisher('/n_1/pcen', numpy_msg(Floats), queue_size=1)
 
         self.pub_formationError21 = rospy.Publisher('/n_1/forErr21', numpy_msg(Floats), queue_size=1)
+        self.pub_formationError31 = rospy.Publisher('/n_1/forErr31', numpy_msg(Floats), queue_size=1)
         self.pub_formationError41 = rospy.Publisher('/n_1/forErr41', numpy_msg(Floats), queue_size=1)
         # subscribe to r_values topic
         rospy.Subscriber('/n_1/r_values', numpy_msg(Floats), self.controller)
@@ -142,6 +143,7 @@ class Controller:
 
             # Errpr
             Error21 = np.linalg.norm(np.float32(self.p21-self.p21_star))
+            Error31 = np.linalg.norm(np.float32(self.p31-self.p31_star))
             Error41 = np.linalg.norm(np.float32(self.p41-self.p41_star))
 
             try:
@@ -151,7 +153,7 @@ class Controller:
                 pass
 
             try:
-                errorgroup = self.pcen_real - self.goal
+                errorgroup = self.goal - self.pcen_real
                 self.publish_errorGroup(errorgroup)
             except AttributeError:
                 pass 
@@ -192,7 +194,7 @@ class Controller:
             # publish
             self.publish_control_inputs(U[0], U[1])
             self.publish_zeta(self.zeta1)
-            self.publish_Errors(Error21, Error41)
+            self.publish_Errors(Error21, Error31, Error41)
             
 
         elif 10 < self.running < 1000:
@@ -210,10 +212,11 @@ class Controller:
         self.zeta1 = zeta1
         self.pub_zeta.publish(self.zeta1)
     
-    def publish_Errors(self, error21, error41):
+    def publish_Errors(self, error21, error31, error41):
         self.pub_formationError21.publish(np.array([error21]))
+        self.pub_formationError31.publish(np.array([error31]))
         self.pub_formationError41.publish(np.array([error41]))
-
+        
     def publish_pcen(self, pcen):
         self.centre.x = pcen[0]
         self.centre.y = pcen[1]
@@ -225,8 +228,9 @@ class Controller:
         self.pub_errorgroup.publish(self.error)
 
     def goal_location(self, msg):
-        self.goal = np.array([[msg.goal.target_pose.pose.position.x], [msg.goal.target_pose.pose.position.y]], dtype=np.float32)
-        print(self.goal)
+        goal_command = np.array([[msg.goal.target_pose.pose.position.x], [msg.goal.target_pose.pose.position.y]], dtype=np.float32)
+        start_position = np.copy(self.pcen_real)
+        self.goal = goal_command + start_position
         # error_group = self.pcen_real-self.goal
         # self.publish_errorGroup(error_group)
 
@@ -248,7 +252,7 @@ class Controller:
             p4 = self.p41 + self.p1
             p3 = self.p31 + self.p1
             p2 = self.p21 + self.p1
-            pcen = np.array((self.p1 + p4 + p3 + p2)/4, dtype=np.float32)
+            pcen = np.array((self.p1 + p4 + p3 + p2)/4.0, dtype=np.float32)
             self.Pcenlog = np.append(self.Pcenlog, pcen)
         except AttributeError:
             pass
